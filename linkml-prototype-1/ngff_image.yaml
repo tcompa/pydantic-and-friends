@@ -17,6 +17,18 @@ classes:
         required: true
   Multiscale:
     attributes:
+      version: # TODO
+      name: # TODO
+      axes: # TODO
+      coordinateTransformations:
+        # TODO: this should be merged with the one within Dataset class 
+        multivalued: true
+        any_of:
+          - range: IdentityTransformation
+          - range: TranslationTransformation
+          - range: ScaleTransformation
+      type: # TODO
+      metadata: # TODO
       datasets:
         multivalued: true
         range: Dataset
