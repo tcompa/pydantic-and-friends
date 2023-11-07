@@ -6,5 +6,5 @@ python -m venv venv
 source venv/bin/activate
 pip install linkml
 
-gen-pydantic ngff_image.yaml > whatever.py
+gen-pydantic ngff_image.yaml > ngff_image.py
 ```
