@@ -1,0 +1,11 @@
+---
+name: ome-zarr-pydantic
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.10
+  - pip=23.1
+  - poetry=1.4.2
+variables:
+  PYTHON_KEYRING_BACKEND: "keyring.backends.null.Keyring" # Avoiding Poetry Keyring issues
