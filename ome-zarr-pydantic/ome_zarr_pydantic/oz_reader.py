@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 import jsonschema
-from ome_zarr_pydantic.model.image import Image
+from ome_zarr_pydantic.model.image import Dataset, Image, ZArray
 from ome_zarr_pydantic.model.plate import Plate
 import requests
 
@@ -63,9 +63,15 @@ class PlateReader:
 
 
 class ImageReader:
+    """_summary_ TODO
+    
+    TODO: Only supports one multiscale for now
+    """
+    
     __IMAGE_SCHEMA_LINK: str = "https://ngff.openmicroscopy.org/0.4/schemas/image.schema"
     
     image: Image
+    chunks: dict[str, list[ZArray]] = {}
     
     def __init__(self: Self, path: Path) -> None:
         print('Parse image')
@@ -82,6 +88,17 @@ class ImageReader:
             )
             jsonschema.validate(image_zattrs_data, ngff_image_schema)
 
-            self.image_description = Image(**image_zattrs_data)
+            self.image = Image(**image_zattrs_data)
+        
+        datasets: list[Dataset] = self.image.multiscales[0].datasets
+        print(f'Parse zarr datasets, found {len(datasets)} datasets')
+        
+        for dataset in datasets:
+            print(f'Parse dataset {dataset.path}')
+            
+            with Path.open(path / dataset.path / ".zarray", "r") as f:
+                zarray_data = json.load(f)
+                self.chunks[dataset.path] = ZArray(**zarray_data)
+                print(f'Found {len(self.chunks[dataset.path].chunks)} chunks')
 
 

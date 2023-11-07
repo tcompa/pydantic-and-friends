@@ -22,16 +22,17 @@ class Multiscale(ConfigModel):
             raise ValueError("Axes must be unique.")
         return value
     
-    @model_validator(mode='after')
-    def check_datasets_match(self) -> None:
-        for dataset in self.datasets:
-            for coordinate_transformation in dataset.coordinate_transformations:
-                if coordinate_transformation.scale != None:
-                    if len(coordinate_transformation.scale) != len(self.axes):
-                        raise ValueError("The scale vector dimension must match the number of axes.")
-                if coordinate_transformation.translation != None:
-                    if len(coordinate_transformation.translation) != len(self.axes):
-                        raise ValueError("The translation vector dimension must match the number of axes.")
+    # TODO: Need to debug pydantic model_validator (see also comment below)
+    # @model_validator(mode='after')
+    # def check_datasets_match(self) -> None:
+    #     for dataset in self.datasets:
+    #         for coordinate_transformation in dataset.coordinate_transformations:
+    #             if coordinate_transformation.scale != None:
+    #                 if len(coordinate_transformation.scale) != len(self.axes):
+    #                     raise ValueError("The scale vector dimension must match the number of axes.")
+    #             if coordinate_transformation.translation != None:
+    #                 if len(coordinate_transformation.translation) != len(self.axes):
+    #                     raise ValueError("The translation vector dimension must match the number of axes.")
 
 
 class Axe(ConfigModel):
@@ -111,23 +112,8 @@ class Channel(ConfigModel):
     window: dict[str, int]  # TODO: Add Type
     
 
-# TODO: Check
-# class ZArray(BaseModel):
-#     shape: list[int]
-#     chunks: list[int]
-#     dtype: str
-
-# TODO: Json Schema from Zarr?
-# def init(
-#     self: Self,
-#     parent: OZMultiscale,
-#     path: Path,
-#     index: int,
-# ) -> None:
-#     self.parent = parent
-#     self.path = Path(path) / str(index)
-#     self.index = index
-#     self.image = parent.image
-#     with Path.open(self.path / ".zarray", "r") as f:
-#         zarray_data = json.load(f)
-#         self.zarray = ZArray(**zarray_data)
+# TODO: Check for Zarr Pydantic Models
+class ZArray(ConfigModel):
+    shape: list[int]
+    chunks: list[int]
+    dtype: str
