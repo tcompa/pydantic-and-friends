@@ -17,6 +17,18 @@ classes:
         required: true
   Multiscale:
     attributes:
+      version: # TODO
+      name: # TODO
+      axes: # TODO
+      coordinateTransformations:
+        # TODO: this should be merged with the one within Dataset class 
+        multivalued: true
+        any_of:
+          - range: IdentityTransformation
+          - range: TranslationTransformation
+          - range: ScaleTransformation
+      type: # TODO
+      metadata: # TODO
       datasets:
         multivalued: true
         range: Dataset
@@ -26,7 +38,35 @@ classes:
         range: string
       coordinateTransformations:
         multivalued: true
-        range: CoordinateTransformation
+        any_of:
+          - range: IdentityTransformation
+          - range: TranslationTransformation
+          - range: ScaleTransformation
+  IdentityTransformation:
+    attributes:
+      type:
+        range: IdentityEnum
+        required: true
+  TranslationTransformation:
+    attributes:
+      type:
+        range: TranslationEnum
+        required: true
+      translation:
+        required: true
+        any_of:
+          - range: TranslationCoordinateTransformationItem
+          - range: PathBasedCoordinateTransformationItem
+  ScaleTransformation:
+    attributes:
+      type:
+        range: ScaleEnum
+        required: true
+      scale:
+        required: true
+        any_of:
+          - range: ScaleCoordinateTransformationItem
+          - range: PathBasedCoordinateTransformationItem
   CoordinateTransformation:
     attributes:
       type:
@@ -34,11 +74,32 @@ classes:
       path:
         multivalued: true
         range: float
+  PathBasedCoordinateTransformationItem:
+    attributes:
+      path:
+        range: string
+        required: true
+  ScaleCoordinateTransformationItem:
+    attributes:
+      scale:
+        required: true
+        multivalued: true
+        range: float
+  TranslationCoordinateTransformationItem:
+    attributes:
+      translation:
+        required: true
+        multivalued: true
+        range: float
 
 
 enums:
-  CoordinateTransformationType:
+  IdentityEnum:
     permissible_values:
-      ALIVE:
-      DEAD:
-      UNKNOWN:
+      identity:
+  TranslationEnum:
+    permissible_values:
+      translation:
+  ScaleEnum:
+    permissible_values:
+      scale:
