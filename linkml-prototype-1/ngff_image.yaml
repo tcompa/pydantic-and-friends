@@ -1,0 +1,44 @@
+id: https://w3id.org/linkml/examples/image
+name: image
+prefixes:
+  linkml: https://w3id.org/linkml/
+  image: https://w3id.org/linkml/examples/image
+imports:
+  - linkml:types
+default_range: string
+default_prefix: image
+
+classes:
+  Image:
+    attributes:
+      multiscales:
+        multivalued: true
+        range: Multiscale
+        required: true
+  Multiscale:
+    attributes:
+      datasets:
+        multivalued: true
+        range: Dataset
+  Dataset:
+    attributes:
+      path:
+        range: string
+      coordinateTransformations:
+        multivalued: true
+        range: CoordinateTransformation
+  CoordinateTransformation:
+    attributes:
+      type:
+        range: string
+      path:
+        multivalued: true
+        range: float
+
+
+enums:
+  CoordinateTransformationType:
+    permissible_values:
+      ALIVE:
+      DEAD:
+      UNKNOWN:
