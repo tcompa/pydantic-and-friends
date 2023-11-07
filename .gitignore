@@ -4,3 +4,6 @@
 
 # Test Files
 *.zarr
+
+# IDE Specific
+*.vscode
