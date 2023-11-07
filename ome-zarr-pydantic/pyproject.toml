@@ -10,6 +10,10 @@ run = "ome_zarr_pydantic.main:main"
 [tool.poetry.dependencies]
 # python
 python = "^3.10"
+# model
+pydantic = "^2.4.2"
+# reader
+ome-zarr = "^0.8.2"
 
 [tool.poetry.group.dev.dependencies]
 # Linter
