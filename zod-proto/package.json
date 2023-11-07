@@ -1,0 +1,23 @@
+{
+  "name": "zod-proto",
+  "version": "1.0.0",
+  "description": "zod validation of ome-ngff",
+  "main": "index.js",
+  "repository": "https://github.com/tcompa/pydantic-and-friends",
+  "author": "Nodar Gogoberidze",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@types/node": "^20.8.10",
+    "typescript": "^5.2.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node ./bin/app.js",
+    "dev": "ts-node ./src/app.ts"
+  }
+}
