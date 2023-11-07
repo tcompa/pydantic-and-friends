@@ -5,17 +5,13 @@ from devtools import debug
 from typing import Any
 
 
-class RootGroupModel(BaseModel):
+
+class MySubgroupModel(BaseModel):
     attributes: dict[str, Any]
-    members: list[SubgroupModel]
 
-
-class SubgroupModel(BaseModel):
-    key2: str
-
-
-class HierarchyModel(BaseModel):
-    test: str
+class MyRootGroupModel(BaseModel):
+    attributes: dict[str, Any]
+    members: dict[str, MySubgroupModel]
 
 
 def read_whole_hierarchy_metadata(group: Group) -> dict:
@@ -40,7 +36,7 @@ def read_whole_hierarchy_metadata(group: Group) -> dict:
 
 
 def validate_whole_hierarchy_metadata(hierarchy: dict) -> None:
-    HierarchyModel(**hierarchy)
+    MyRootGroupModel(**hierarchy)
 
 
 # EXPECTED DATA
@@ -59,3 +55,5 @@ actual_hierarchy_metadata = read_whole_hierarchy_metadata(root_group)
 debug(actual_hierarchy_metadata)
 
 assert hierarchy_metadata == actual_hierarchy_metadata
+
+validate_whole_hierarchy_metadata(actual_hierarchy_metadata)
