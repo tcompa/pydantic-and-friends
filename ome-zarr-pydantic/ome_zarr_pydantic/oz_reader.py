@@ -1,24 +1,17 @@
 """TODO: Utility functions to read data from an OME-Zarr file.
 """
 import json
-from email.policy import strict
+import zarr
+
 from pathlib import Path
 
 import jsonschema
 import requests
 from typing_extensions import Self
 
-from ome_zarr_pydantic.model.image import Dataset, Image, ZArray
+from ome_zarr_pydantic.model.image import Dataset, Image
 from ome_zarr_pydantic.model.plate import Plate
-
-# TODO: Import for actual data reading later
-# import dask.array as da
-# import numpy as np
-
-# from ome_zarr.io import parse_url  # type: ignore[import]
-# from ome_zarr.reader import Reader
-
-
+from pydantic_zarr.v2 import GroupSpec
 
 
 class PlateReader:
@@ -28,9 +21,14 @@ class PlateReader:
     plate_description: Plate
     image_readers: dict[str, "ImageReader"] = {}
 
-    # TODO: Probably create a dictionary of all images readers?
-
     def __init__(self: Self, path: Path) -> None:
+        """_summary_
+
+        Args:
+            self (Self): Class instance
+            path (Path): File path to the OME-Zarr file (should be using FS to abstract location)
+        """
+        
         print("Parse plate layout")
         with Path.open(path / ".zattrs", "r") as plate_zattrs_file:
             plate_zattrs_data = json.load(plate_zattrs_file)
@@ -62,12 +60,13 @@ class ImageReader:
     """_summary_ TODO
 
     TODO: Only supports one multiscale for now
+    TODO: Not clear about the separation of validation vs. reading
     """
 
     __IMAGE_SCHEMA_LINK: str = "https://ngff.openmicroscopy.org/0.4/schemas/image.schema"
 
     image: Image
-    chunks: dict[str, list[ZArray]] = {}
+    # chunks: dict[str, list[ZArray]] = {}
 
     def __init__(self: Self, path: Path) -> None:
         print("Parse image")
@@ -90,7 +89,93 @@ class ImageReader:
         for dataset in datasets:
             print(f"Parse dataset {dataset.path}")
 
-            with Path.open(path / dataset.path / ".zarray", "r") as f:
-                zarray_data = json.load(f)
-                self.chunks[dataset.path] = ZArray(**zarray_data)
-                print(f"Found {len(self.chunks[dataset.path].chunks)} chunks")
+            # TODO: Something wrong with the path here or the example data
+            print(path/dataset.path)
+            zarr_group: zarr.Group = zarr.group(path=path/dataset.path)
+            
+            zarr_spec = GroupSpec.from_zarr(zarr_group)
+            print(zarr_spec.model_dump())
+            
+            
+            # with Path.open(path / dataset.path / ".zarray", "r") as f:
+            #     zarray_data = json.load(f)
+                
+                
+                # self.chunks[dataset.path] = ZArray(**zarray_data)
+                # print(f"Found {len(self.chunks[dataset.path].chunks)} chunks")
+
+
+# # TODO: Old code below - probably can throw out the ome_zarr reader
+# import dask.array as da
+# import numpy as np
+
+# from ome_zarr.io import parse_url  # type: ignore[import]
+# from ome_zarr.reader import Reader, Node
+
+# # TODO: Image Data reader based on accessor variables
+# def get_image_data(  # noqa: PLR0913
+#     self: Self,
+#     *,
+#     first_x_index: int,
+#     last_x_index: int,
+#     first_y_index: int,
+#     last_y_index: int,
+#     scale: int,
+#     t: int,
+#     channel: int | None,
+#     label: int | None,
+#     z: int,
+# ) -> np.ndarray:
+#     """_summary_
+
+#     TODO: Return any kind of array, not just numpy
+
+#     Args:
+#         first_x_index (int): _description_
+#         last_x_index (int): _description_
+#         first_y_index (int): _description_
+#         last_y_index (int): _description_
+#         scale (int): _description_
+#         t (int): _description_
+#         channel (int | None): _description_
+#         label (int | None): _description_
+#         z (int): _description_
+
+#     Raises:
+#         Exception: _description_
+
+#     Returns:
+#         np.ndarray: _description_
+#     """
+    
+#     location: ZarrLocation | None = parse_url(self.path)
+#     if location is None:
+#         raise Exception(f"Invalid location :{self.path}")
+#     reader = Reader(location)
+#     nodes: list[Node] = list(reader())
+#     node_index: int = 0
+#     if label is not None:
+#         node_index += 2 + label
+#     image_node: Node = nodes[node_index]
+#     dask_data = image_node.data
+#     scale_data = dask_data[scale]
+
+#     if self.has_axe(axe_type=AxeType.t) and t is not None:
+#         scale_data = scale_data[t]
+
+#     scale_data = scale_data[channel] if channel is not None else scale_data[0]
+
+#     image_data = scale_data[z]
+
+#     if last_x_index > 0:
+#         image_data = da.concatenate([image_data[:, :last_x_index]], axis=0)
+
+#     if first_x_index > 0:
+#         image_data = da.concatenate([image_data[:, first_x_index:]], axis=0)
+
+#     if last_y_index > 0:
+#         image_data = da.concatenate([image_data[:last_y_index, :]], axis=1)
+
+#     if first_y_index > 0:
+#         image_data = da.concatenate([image_data[first_y_index:, :]], axis=1)
+#     return image_data.compute()

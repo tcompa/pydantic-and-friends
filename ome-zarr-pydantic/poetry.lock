@@ -1588,6 +1588,23 @@ files = [
 typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
+name = "pydantic-zarr"
+version = "0.5.2"
+description = "pydantic models for zarr"
+category = "main"
+optional = false
+python-versions = ">=3.9,<4.0"
+files = [
+    {file = "pydantic_zarr-0.5.2-py3-none-any.whl", hash = "sha256:f3ce020d38979ee30c8dba9be32a7441ca8cac2e19302236f396f6f728bc1e73"},
+    {file = "pydantic_zarr-0.5.2.tar.gz", hash = "sha256:d88c2214ff8b2b95ebbc639e240768701cb539fea8e58ac2142a9d5fa7a97064"},
+]
+
+[package.dependencies]
+pydantic = ">=2.0.0,<3.0.0"
+typing-extensions = {version = ">=4.7.1,<5.0.0", markers = "python_version < \"3.12\""}
+zarr = ">=2.14.2,<3.0.0"
+
+[[package]]
 name = "pytest"
 version = "7.4.3"
 description = "pytest: simple powerful testing with Python"
@@ -2342,4 +2359,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "aa6dffc375852e347abc72ed370b99d45441b70f6f3b53e5231973bef32010a6"
+content-hash = "70d1944e86d3b53444c2e847ba574c53b5c3a5ae21e3e89266e87c6a241c12e5"

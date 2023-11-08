@@ -15,6 +15,7 @@ pydantic = "^2.4.2"
 # reader
 ome-zarr = "^0.8.2"
 jsonschema = "^4.19.2"
+pydantic-zarr = "^0.5.2"
 
 [tool.poetry.group.dev.dependencies]
 # Linter

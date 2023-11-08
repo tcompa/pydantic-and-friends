@@ -1,14 +1,17 @@
-from pydantic import Field, validator
+from typing import Optional
+from pydantic import Field, validator, PositiveInt, NonNegativeInt
 
 from ome_zarr_pydantic.model.common import ConfigModel
 
 
 class Plate(ConfigModel):
-    acquisitions: list
+    version: Optional[str] = None  # Not part of the spec currently
+    acquisitions: list["Acquisition"]
     columns: list["Column"] = Field(min_items=1)
     rows: list["Row"] = Field(min_items=1)
     name: str | None = "Undefined"
     wells: list["Well"] = Field(min_items=1)
+    field_count: Optional[PositiveInt] = None
 
     @validator("columns")
     @classmethod
@@ -33,6 +36,12 @@ class Plate(ConfigModel):
         if len(value) != len(set(value)):
             raise ValueError("Wells must be unique.")
         return value
+
+
+class Acquisition(ConfigModel):
+    id: NonNegativeInt
+    name: Optional[str] = None
+    maximumfieldcount: Optional[PositiveInt] = None
 
 
 class Column(ConfigModel):

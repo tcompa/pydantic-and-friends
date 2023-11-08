@@ -156,10 +156,3 @@ class Window(ConfigModel):
     min: float
     start: Optional[float] = None
     end: Optional[float] = None
-
-
-# TODO: Check for Zarr Pydantic Models
-class ZArray(ConfigModel):
-    shape: list[int]
-    chunks: list[int]
-    dtype: str
