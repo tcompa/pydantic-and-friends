@@ -1,0 +1,9 @@
+# OS Artifacts
+*.DS_Store
+*.pyc
+
+# Test Files
+*.zarr
+
+# IDE Specific
+*.vscode
