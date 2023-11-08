@@ -61,3 +61,9 @@ Create the conda package without default packages to ensure reproducibility by o
 ```
 conda env create -f environment.yml --no-default-packages
 ```
+
+### 3.2 Testing
+Run test with
+```
+pytest
+```
