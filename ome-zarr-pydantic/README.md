@@ -10,6 +10,7 @@
     - [2.1. Command line](#21-command-line)
     - [2.2. Code](#22-code)
   - [3. Development](#3-development)
+    - [3.1 Packaging](#31-packaging)
 
 <!-- /TOC -->
 ## 1. Installation
@@ -53,4 +54,10 @@ Small dataset provided by Fractal: [Zenodo Link](https://zenodo.org/records/8091
 ```
 curl -O https://zenodo.org/records/8091756/files/20200812-CardiomyocyteDifferentiation14-Cycle1.zarr.zip
 unzip 20200812-CardiomyocyteDifferentiation14-Cycle1.zarr.zip
+```
+
+### 3.1 Packaging
+Create the conda package without default packages to ensure reproducibility by others:
+```
+conda env create -f environment.yml --no-default-packages
 ```

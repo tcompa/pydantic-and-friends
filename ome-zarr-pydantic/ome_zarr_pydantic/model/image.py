@@ -8,7 +8,7 @@ from ome_zarr_pydantic.model.common import ConfigModel
 
 class Image(ConfigModel):
     multiscales: list["Multiscale"] = Field(min_length=1)
-    omero: "Omero"
+    omero: "Omero" | None = None
 
 
 class Multiscale(ConfigModel):
@@ -23,17 +23,18 @@ class Multiscale(ConfigModel):
             raise ValueError("Axes must be unique.")
         return value
 
-    # TODO: Need to debug pydantic model_validator (see also comment below)
-    # @model_validator(mode='after')
-    # def check_datasets_match(self) -> None:
-    #     for dataset in self.datasets:
-    #         for coordinate_transformation in dataset.coordinate_transformations:
-    #             if coordinate_transformation.scale != None:
-    #                 if len(coordinate_transformation.scale) != len(self.axes):
-    #                     raise ValueError("The scale vector dimension must match the number of axes.")
-    #             if coordinate_transformation.translation != None:
-    #                 if len(coordinate_transformation.translation) != len(self.axes):
-    #                     raise ValueError("The translation vector dimension must match the number of axes.")
+    @model_validator(mode='after')
+    def check_datasets_match(self) -> 'Multiscale':
+        for dataset in self.datasets:
+            for coordinate_transformation in dataset.coordinate_transformations:
+                if coordinate_transformation.scale != None:
+                    if len(coordinate_transformation.scale) != len(self.axes):
+                        raise ValueError("The scale vector dimension must match the number of axes.")
+                if coordinate_transformation.translation != None:
+                    if len(coordinate_transformation.translation) != len(self.axes):
+                        raise ValueError("The translation vector dimension must match the number of axes.")
+
+        return self
 
 
 class Axe(ConfigModel):
@@ -73,26 +74,26 @@ class CoordinateTransformation(ConfigModel):
             raise ValueError("Transformation type must be one of identity, translation or scale.")
         return value
 
-    # TODO: Debug - for some reason this makes Pydantic return a None Object
-    # @model_validator(mode='after')
-    # def check_fields(self) -> None:
-    #     match self.transformation_type:
-    #         case "identity":
-    #             if self.scale is not None:
-    #                 raise ValueError("Identity transformation cannot have a scale.")
-    #             if self.translation is not None:
-    #                 raise ValueError("Identity transformation cannot have a translation.")
-    #         case "translation":
-    #             if self.scale is not None:
-    #                 raise ValueError("Translation transformation cannot have a scale.")
-    #         case "scale":
-    #             if self.translation is not None:
-    #                 raise ValueError("Scale transformation cannot have a translation.")
-    #         case _:
-    #             raise ValueError("Transformation type must be one of identity, translation or scale.")
+    @model_validator(mode='after')
+    def check_fields(self) -> 'CoordinateTransformation':
+        match self.transformation_type:
+            case "identity":
+                if self.scale is not None:
+                    raise ValueError("Identity transformation cannot have a scale.")
+                if self.translation is not None:
+                    raise ValueError("Identity transformation cannot have a translation.")
+            case "translation":
+                if self.scale is not None:
+                    raise ValueError("Translation transformation cannot have a scale.")
+            case "scale":
+                if self.translation is not None:
+                    raise ValueError("Scale transformation cannot have a translation.")
+            case _:
+                raise ValueError("Transformation type must be one of identity, translation or scale.")
+        return self
 
 
-# TODO: Somehow the Field class doesn't play well with the Enum (even with use_enum_values = True)
+# TODO: The Enum can't be used here
 # class TransformationType(Enum):
 #     identity = "identity"
 #     translation = "translation"
@@ -100,19 +101,40 @@ class CoordinateTransformation(ConfigModel):
 
 
 class Omero(ConfigModel):
+    """
+    Model for `NgffImageMeta.omero`.
+
+    See https://ngff.openmicroscopy.org/0.4/#omero-md.
+    """
     channels: list["Channel"]
     rdefs: dict | None = None  # TODO: Add Type
     version: str
 
 
 class Channel(ConfigModel):
-    active: bool = True
-    coefficient: float = 1.0
+    """
+    Model for an element of `Omero.channels`.
+
+    See https://ngff.openmicroscopy.org/0.4/#omero-md.
+    """
+    window: "Window"
+    label: str | None = None
+    family: str | None = None
     color: str
-    family: str = "linear"
-    inverted: bool = False
-    label: str
-    window: dict[str, int]  # TODO: Add Type
+    active: bool | None = None
+
+
+class Window(ConfigModel):
+    """
+    Model for `Channel.window`.
+
+    Note that we deviate by NGFF specs by making `start` and `end` optional.
+    See https://ngff.openmicroscopy.org/0.4/#omero-md.
+    """
+    max: float
+    min: float
+    start: float | None = None
+    end: float | None = None
 
 
 # TODO: Check for Zarr Pydantic Models
