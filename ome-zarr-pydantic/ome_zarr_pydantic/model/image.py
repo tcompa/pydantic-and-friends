@@ -1,5 +1,4 @@
-# from enum import Enum
-from typing import Optional
+from typing import Literal, Optional, Union
 
 from pydantic import Field, model_validator, validator
 
@@ -34,12 +33,16 @@ class Multiscale(ConfigModel):
     def check_datasets_match(self) -> 'Multiscale':
         for dataset in self.datasets:
             for coordinate_transformation in dataset.coordinate_transformations:
-                if coordinate_transformation.scale != None:
+                if isinstance(coordinate_transformation, IdentityCoordinateTransformation):
+                    pass
+                elif isinstance(coordinate_transformation, ScaleCoordinateTransformation):
                     if len(coordinate_transformation.scale) != len(self.axes):
                         raise ValueError("The scale vector dimension must match the number of axes.")
-                if coordinate_transformation.translation != None:
+                elif isinstance(coordinate_transformation, TranslationCoordinateTransformation):
                     if len(coordinate_transformation.translation) != len(self.axes):
                         raise ValueError("The translation vector dimension must match the number of axes.")
+                else:
+                    raise ValueError(f"Coordinate transformation type {type(coordinate_transformation)} not supported.")
 
         return self
 
@@ -66,55 +69,56 @@ class Dataset(ConfigModel):
 
     See https://ngff.openmicroscopy.org/0.4/#multiscale-md
     """
-    coordinate_transformations: list["CoordinateTransformation"] = Field(
+    coordinate_transformations: list[
+        Union[
+            "IdentityCoordinateTransformation", 
+            "ScaleCoordinateTransformation", 
+            "TranslationCoordinateTransformation"
+        ]
+    ] = Field(
         alias="coordinateTransformations",
-        min_items=1,
+        min_items=1
     )
+
     path: str
 
 
-class CoordinateTransformation(ConfigModel):
-    scale: Optional[list[float]] = None
-    translation: Optional[list[float]] = None
-    transformation_type: str = Field(
-        alias="type",
-    )
+class IdentityCoordinateTransformation(ConfigModel):
+    """
+    Model for an identity transformation.
 
-    @validator("transformation_type")
-    @classmethod
-    def check_correct_transformation_type(cls, value: str) -> str:
-        """Check that the transformation type is correct.
+    This corresponds to identity-type elements of
+    `Dataset.coordinateTransformations` or
+    `Multiscale.coordinateTransformations`.
+    See https://ngff.openmicroscopy.org/0.4/#trafo-md
+    """
+    type: Literal["identity"]
+    
 
-        TODO: See Enum issue below
-        """
-        if value not in ["identity", "translation", "scale"]:
-            raise ValueError("Transformation type must be one of identity, translation or scale.")
-        return value
+class ScaleCoordinateTransformation(ConfigModel):
+    """
+    Model for a scale transformation.
 
-    @model_validator(mode='after')
-    def check_fields(self) -> 'CoordinateTransformation':
-        match self.transformation_type:
-            case "identity":
-                if self.scale is not None:
-                    raise ValueError("Identity transformation cannot have a scale.")
-                if self.translation is not None:
-                    raise ValueError("Identity transformation cannot have a translation.")
-            case "translation":
-                if self.scale is not None:
-                    raise ValueError("Translation transformation cannot have a scale.")
-            case "scale":
-                if self.translation is not None:
-                    raise ValueError("Scale transformation cannot have a translation.")
-            case _:
-                raise ValueError("Transformation type must be one of identity, translation or scale.")
-        return self
+    This corresponds to scale-type elements of
+    `Dataset.coordinateTransformations` or
+    `Multiscale.coordinateTransformations`.
+    See https://ngff.openmicroscopy.org/0.4/#trafo-md
+    """
+    type: Literal["scale"]
+    scale: list[float] = Field(..., min_items=2)
 
 
-# TODO: The Enum can't be used here
-# class TransformationType(Enum):
-#     identity = "identity"
-#     translation = "translation"
-#     scale = "scale"
+class TranslationCoordinateTransformation(ConfigModel):
+    """
+    Model for a translation transformation.
+
+    This corresponds to translation-type elements of
+    `Dataset.coordinateTransformations` or
+    `Multiscale.coordinateTransformations`.
+    See https://ngff.openmicroscopy.org/0.4/#trafo-md
+    """
+    type: Literal["translation"]
+    translation: list[float] = Field(..., min_items=2)
 
 
 class Omero(ConfigModel):
