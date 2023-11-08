@@ -21,6 +21,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           auto-activate-base: false
 
+      - name: Conda info
+        shell: bash -el {0}
+        run: conda info
+
       - name: Poetry install
         run: poetry install
         working-directory: ./ome-zarr-pydantic
