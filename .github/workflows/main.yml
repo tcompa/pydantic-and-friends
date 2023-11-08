@@ -1,0 +1,34 @@
+on: workflow_dispatch
+
+jobs:
+  tests:
+    name: Test (${{ matrix.python-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"] #, "macos-latest", "windows-latest"]
+        python-version: ["3.10"] #, "3.11"]
+
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: ome-zarr-pydantic
+          environment-file: ome-zarr-pydantic/environment.yml
+          python-version: ${{ matrix.python-version }}
+          auto-activate-base: false
+
+      - name: Conda info
+        shell: bash -el {0}
+        run: conda info
+
+      - name: Poetry install
+        run: poetry install
+        working-directory: ./ome-zarr-pydantic
+
+      - name: Run tests
+        run: pytest
+        working-directory: ./ome-zarr-pydantic

@@ -1,4 +1,3 @@
----
 name: ome-zarr-pydantic
 channels:
   - conda-forge
